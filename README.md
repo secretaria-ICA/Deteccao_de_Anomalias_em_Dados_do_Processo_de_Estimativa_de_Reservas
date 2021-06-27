@@ -127,7 +127,7 @@ Podendo ```x``` ser definido como um fator de sensibilidade permitindo identific
 
 Este trabalho propôs uma metodologia ajustada, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + desvio padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
 
-!(fig-countplot.png)
+![](fig-countplot.png)
  
 Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é reforçada devido sua distância para todos os centroides.
 
@@ -135,7 +135,7 @@ O processo se resume em calcular um valor denominado “distância relativa” p
 
 1.	Calcular a distância euclidiana de cada elemento para cada centroide
 
-    !(fig-dist-clusters.png)
+    ![](fig-dist-clusters.png)
 
 
 2.	Calcular estatística dos elementos em relação a cada centroide
@@ -148,10 +148,10 @@ O processo se resume em calcular um valor denominado “distância relativa” p
     ```
     Ao final, deste processo, obtém-se resultados como os exemplificados abaixo.
 
-    !(fig-describe-cluster.png)
+    ![](fig-describe-cluster.png)
     
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
-    !(fig-dist-ref-clusters.png)
+    ![](fig-dist-ref-clusters.png)
 
 4.	Calcular a distância relativa de cada elemento para cada centroide
     ```
@@ -185,7 +185,7 @@ O valor de ```distancia_relativa_global``` é usado para identificar anomalias. 
 
 A figura abaixo exemplifica os valores de cada elemento calculados neste processo.
 
-!(fig-dist-ref-clusters.png)
+![](fig-dist-ref-clusters.png)
 
 # Identificação de anomalias em dados não treinados
 
