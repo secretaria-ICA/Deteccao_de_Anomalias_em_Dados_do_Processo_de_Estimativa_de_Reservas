@@ -113,7 +113,7 @@ sns.countplot(x=km.labels_)
  
 Além da associação de cada elemento a um cluster, é calculada distância euclidiana para cada centroide. Desta forma, é computada a distância do elemento tanto para seu cluster quanto para os demais. Na figura abaixo, cada linha representa uma plataforma e as colunas se referem ao cluster associado e às distâncias para cada centroide.
  
-A metodologia de identificação de anomalia por K-Means feita em [REF] considera um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. Esta distância padrão para cada centroide ```c``` pode ser definida como:
+Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. O limite padrão para cada centroide ```c``` pode ser definida como:
 
 ```
 # Pseudo-código
@@ -125,14 +125,18 @@ limite[c] = mediana(distancias) + x * desvio_padrao(distancias)
 ```
 Podendo ```x``` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia.
 
-Este trabalho propôs uma metodologia ajustada, considerando também a distância para outros centroides. Na Figura #, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + desvio padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides. 
+Este trabalho propôs uma metodologia ajustada, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + desvio padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
+
+!(fig-countplot.png)
  
 Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é reforçada devido sua distância para todos os centroides.
 
 O processo se resume em calcular um valor denominado “distância relativa” para cada um dos elementos. A partir da distribuição estatística desta distância, os elementos que possuem maiores distâncias são considerados anômalos. O cálculo é feito no seguinte fluxo:
 
 1.	Calcular a distância euclidiana de cada elemento para cada centroide
-[figura]
+
+    !(fig-dist-clusters.png)
+
 
 2.	Calcular estatística dos elementos em relação a cada centroide
     ```
@@ -142,11 +146,12 @@ O processo se resume em calcular um valor denominado “distância relativa” p
         Para cada centroide "k": # Percorre cada centroide e o referencia na variável k
             Calcule a mediana e desvio padrão de "elementos" considerando suas distâncias para k
     ```
-    Ao final, deste processo, obtém-se resultados como os exemplificados na Figura #.
-    Colocar Figura #, Colocar distribuições
+    Ao final, deste processo, obtém-se resultados como os exemplificados abaixo.
+
+    !(fig-describe-cluster.png)
     
-3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão
-[figura]
+3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
+    !(fig-dist-ref-clusters.png)
 
 4.	Calcular a distância relativa de cada elemento para cada centroide
     ```
@@ -178,6 +183,10 @@ O processo se resume em calcular um valor denominado “distância relativa” p
     ```
 O valor de ```distancia_relativa_global``` é usado para identificar anomalias. Elementos cuja ```distancia_relativa_total``` sejam maiores que ```distancia_relativa_global``` são considerados anômalos.
 
+A figura abaixo exemplifica os valores de cada elemento calculados neste processo.
+
+!(fig-dist-ref-clusters.png)
+
 # Identificação de anomalias em dados não treinados
 
 O processo explicado no item 4 tem como premissa que os dados de treinamento são confiáveis, possuindo nenhuma ou pouca anomalia.
@@ -192,4 +201,4 @@ Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta
 
 A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada.
 
-Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
+Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como evolução e possível adoção desta metodologia no processo, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
