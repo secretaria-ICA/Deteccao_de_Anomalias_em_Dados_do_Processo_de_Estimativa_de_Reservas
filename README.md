@@ -13,14 +13,14 @@ Trabalho apresentado ao curso [BI MASTER](https://ica.puc-rio.ai/bi-master) como
 
 O trabalho teve como objetivo identificar anomalias em dados utilizados no processo de estimativa de reservas de uma empresa petrolífera.
 
-Periodicamente as empresas de petróleo devem reportar informações sobre suas reservas à diversas entidades (ex.: mercado, governo e certificadores). Como reserva, compreende-se o volume viável economicamente de ser produzido. Este processo envolve a combinação de "projeções de séries temporais", que basicamente se dividem em grupos de variáveis orçamentárias (ex.: investimentos, custos operacionais) e volumétricas (ex.: produção de fluidos).
+Periodicamente as empresas de petróleo devem reportar informações sobre suas reservas à entidades (ex.: mercado, governo e certificadores). Como reserva, compreende-se o volume viável economicamente de ser produzido. Este processo envolve a combinação de "projeções de séries temporais", que basicamente se dividem em grupos de variáveis orçamentárias (ex.: investimentos, custos operacionais) e volumétricas (ex.: produção de fluidos).
 
 Estas variáveis se juntam a cenários econômicos (ex.: projeção do dólar e petróleo brent) para subsidiar a previsão de limites econômicos. Faz parte deste processo identificar até que ano é viável economicamente operar com determinada plataforma, assim como o volume total economicamente viável de ser produzido.
 
 Além da incerteza inerente, soma-se à complexidade deste processo uma variedade de outros detalhes:
 - Cada grupo de variáveis se divide em várias séries específicas.
--	As análises devem considerar cenários de incerteza (ex.: otimista, pessimista, realista).
--	Cada análise deve ser feita para cada plataforma existente, considerando ainda a multiplicação de dimensão quando se considera a zona de produção (variável relacionada a reservatórios).
+- As análises devem considerar cenários de incerteza (ex.: otimista, pessimista, realista).
+- Cada análise deve ser feita para cada plataforma existente, considerando ainda a multiplicação de dimensão quando se considera a zona de produção (variável relacionada a reservatórios).
 
 É possível afirmar que os dados possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Outras relações não tão óbvias podem existir nos dados. O trabalho se propôs a encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar outliers em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um ano e cada coluna representa uma variável.
 
@@ -36,40 +36,20 @@ Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas
 
 # Contexto do problema
 
-De forma resumida os dados originais são agrupados em 9 categorias, representadas nas colunas da tabela de exemplo abaixo. Esta tabela faz referência a uma representação hipotética de dados para análise econômica de uma plataforma de petróleo, tendo variáveis referentes a receitas e despesas. Nesta representação está sendo considerado um período temporal de 18 anos.
+De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis orçamentárias e volumétricas. Essas categorias possuem valores para cada período da série temporal. A tabela abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos. As células indicadas com ```0,00``` recebem os valores das séries.
  
-| ano | ABEX | CAPEX | OPEX | PRODUÇÃO DE ÓLEO | PRODUÇÃO DE GÁS | PERDA GÁS RESERVATÓRIO | PRODUÇÃO DE GÁS RESERVATÓRIO   | USO GÁS | IMPORTAÇÃO DE GÁS |
-|:---:|------|-------|------|------------------|-----------------|------------------------|--------------------------------|---------|-------------------|
-| 1   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 2   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 3   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-| 4   | 0,00 | 0,00  | 0,00 | 0,00             | 0,00            | 0,00                   | 0,00                           | 0,00    | 0,00              |
-
-
-Os gráficos das figuras abaixo representam os mesmos dados de forma visual.
- 
-[Figura]
+| Ano | VAR_1 | VAR_2 | VAR_3 |  ...  | VAR_9 |
+|:---:|-------|-------|-------|-------|-------|
+| 1   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
+| 2   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
+| 3   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
+| 4   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
+| ... | ...   | ...   | ...   | ...   | ...   |  
+| 30  | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
 
 A existência de um mecanismo que melhore a confiabilidade sobre os dados processados pode ser útil para aumentar a qualidade do processo como um todo. Uma série de etapas e detalhes presentes no processo resultam em modificações e ajustes nestas projeções, aumentando a chance de erros.
 
-Mecanismos determinísticos existentes nas ferramentas deste processo tratam uma variedade de inconsistências possíveis. Dois exemplos típicos deste tipo de inconsistência são:
-- Existência de curva de produção sem custo associado (OPEX) em determinado ano.
-- Existência de curva produção após ano de abandono (ABEX).
+Mecanismos determinísticos existentes nas ferramentas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```VAR_1``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```VAR_2```.
 
 No entanto, mesmo atendendo os requisitos de consistência, é possível que os dados contenham comportamentos que necessitem de atenção. Um dígito equivocado a mais em um determinado valor, por exemplo, pode causar uma distorção relevante na análise final e ser de difícil identificação.
 
@@ -85,7 +65,7 @@ Para plataformas que não possuam a projeção completa (ex.: projeção de apen
 
 # Treinamento para identificação de anomalias
 
-Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Neste trabalho, este processamento foi feito considerando o par de séries [OPEX, PRODUÇÃO DE ÓLEO].
+Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Neste trabalho, este processamento foi feito considerando duas séries representando custos operacionais e produção de fluidos.
 
 Inicialmente o algoritmo gera uma nova projeção considerando a razão entre as duas séries. Após normalização de valores, os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
 ```
@@ -127,7 +107,7 @@ Podendo ```x``` ser definido como um fator de sensibilidade permitindo identific
 
 Este trabalho propôs uma metodologia ajustada, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + desvio padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
 
-![](fig-countplot.png)
+![](fig-clusters-centroides.png)
  
 Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é reforçada devido sua distância para todos os centroides.
 
@@ -151,6 +131,7 @@ O processo se resume em calcular um valor denominado “distância relativa” p
     ![](fig-describe-cluster.png)
     
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
+
     ![](fig-dist-ref-clusters.png)
 
 4.	Calcular a distância relativa de cada elemento para cada centroide
@@ -201,4 +182,6 @@ Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta
 
 A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada.
 
-Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como evolução e possível adoção desta metodologia no processo, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
+Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como possível adoção desta metodologia no processo, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Está sendo considerado também rodar o algoritmo para cada combinação de séries, ampliando o escopo para todo o universo de dados e trazendo outras medidas de análise.
+
+Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
