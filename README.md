@@ -11,30 +11,36 @@ Trabalho apresentado ao curso [BI MASTER](https://ica.puc-rio.ai/bi-master) como
 
 # Resumo
 
-O trabalho teve como objetivo identificar anomalias em dados utilizados no processo de estimativa de reservas de uma empresa petrolífera.
+A estimativa de reservas é uma importante atividade na indústria de petróleo e gás. Por meio dela, as empresas deste ramo avaliam a economicidade de seus projetos de produção e investimento. Entidades governamentais exigem que as empresas realizem este processo seguindo metodologias certificadas e reconhecidas internacionalmente. Empresas que possuem ações listadas em bolsas de valores, periodicamente precisam também divulgar ao mercado essas informações. As reservas estão associadas à capacidade da empresa em gerar receita através da venda da produção.
 
-Uma das entregas deste processo é a projeção de valores futuros (produção, custos, investimentos etc.). Existe uma variedade de dados que são compilados para gerar análises envolvendo aspectos econômicos. Por se tratar de estimativas, existem incertezas inerentes ao processo. Por exemplo, os preços futuros do petróleo _brent_ e taxa de câmbio são duas variáveis que precisam ser estimadas para subsidiar as análises.
+As entradas deste processo consistem em planejamentos futuros (projeções) de diversas disciplinas tais como: custos operacionais, custos com abandonos, investimentos (ex.: perfuração de novos poços e entrada de novas unidades) e curvas de produção. Estas projeções são classificadas seguindo critérios estabelecidos em metodologias de referência, defindo as parcelas que correspodem a cada classe de reserva (que possui algumas variações dentro dos grupos de classe Provada, Provável, Possível e Recursos Contingentes).
 
-Além da incerteza inerente, soma-se à complexidade deste processo uma variedade de outros detalhes:
+A incerteza é um fator predominante. A curva de produção, que se transforma em receita, deve considerar uma base de preços de referência (ex.: _petróleo brent_), assim como uma taxa de conversão (câmbio) para a moeda utilizada, que também afeta projeções de custos e investimentos por exemplo.
+
+Além da incerteza inerente ao processo, outros fatores contribuem para sua complexidade:
 - Cada grupo de variáveis se divide em várias séries específicas.
 - As análises devem considerar cenários de incerteza (ex.: otimista, pessimista, realista).
 - Cada análise deve ser feita para cada plataforma existente, considerando ainda a multiplicação de dimensão quando se considera a zona de produção (variável relacionada a reservatórios).
+- O processo deve estar alinhado com outros processos paralelos da empresa.
 
-É possível afirmar que os dados possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Outras relações não tão óbvias podem existir nos dados. O trabalho se propôs a encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar outliers em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um ano e cada coluna representa uma variável.
+Sobre os dados tratados, é possível afirmar que possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Outras relações não tão óbvias podem existir nos dados.
+
+O objetivo do trabalho foi encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar outliers em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um ano e cada coluna representa uma variável.
 
 A metodologia desenvolvida contempla a comparação uma nova projeção (```matriz_p```) com comportamentos padrões encontrados em dados históricos, medindo o “grau de aderência” (confiabilidade) de ```matriz_p``` com cada um dos padrões existentes. A projeção é rotulada como como _outlier_ caso seu grau de aderência esteja acima de um limite calculado.
 
 Das abordagens existentes no universo de ciência de dados para detecção de anomalias, foi escolhido o algoritmo _K-Means_ para tratar o problema. A escolha foi motivada por:
+
 - Contexto _não supervisionado_ do problema (ausência de conhecimento prévio de exemplos classificados como outliers / não outliers).
 - Capacidade do algoritmo em descrever a representação do conhecimento.
 
 A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada, através de um mecanismo que considera a distância do elemento para todos os centroides, detalhada na sessão "Treinamento para identificação de anomalias".
 
-Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas sem apresentar os dados processados.
+Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas omitindo os dados processados.
 
 # Contexto do problema
 
-De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis orçamentárias e volumétricas. Essas categorias possuem valores para cada período da série temporal. A tabela abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos. As células indicadas com ```0,00``` recebem os valores das séries.
+De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis econômicas (ex.: custos e investimentos) e volumétricas (ex.: produção de óleo e gás). Essas categorias possuem valores para cada período da série temporal. A tabela abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos. As células indicadas com ```0,00``` recebem os valores das séries.
  
 | Ano | VAR_1 | VAR_2 | VAR_3 |  ...  | VAR_9 |
 |:---:|-------|-------|-------|-------|-------|
@@ -47,13 +53,19 @@ De forma resumida os dados originais são agrupados em 9 categorias, representan
 
 A existência de um mecanismo que melhore a confiabilidade sobre os dados processados pode ser útil para aumentar a qualidade do processo como um todo. Uma série de etapas e detalhes presentes no processo resultam em modificações e ajustes nestas projeções, aumentando a chance de erros.
 
-Mecanismos determinísticos existentes nas ferramentas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```VAR_1``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```VAR_2```.
+Mecanismos determinísticos existentes nos sistemas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```VAR_1``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```VAR_2```.
 
 No entanto, mesmo atendendo os requisitos de consistência, é possível que os dados contenham comportamentos que necessitem de atenção. Um dígito equivocado a mais em um determinado valor, por exemplo, pode causar uma distorção relevante na análise final e ser de difícil identificação.
 
-É nesse contexto comportamental dos dados que o trabalho se propôs a atuar, através de um algoritmo que identifique distorções em relação a padrões mapeados.
+Nesse contexto comportamental dos dados que o trabalho se propôs a atuar, através de um algoritmo que identifique distorções em relação a padrões existentes nos próprios dados.
 
 # Tratamento dos dados
+
+A extração do conhecimento falar aqui da comparação com dados
+
+citar mais sobre o passo a passo para ajustes no dado. Colocar gráfico de box plot
+
+falar do preenchimento de dados
 
 Apesar das projeções de séries terem comportamentos parecidos entre diferentes plataformas, a dimensão temporal dos dados pode variar. Plataformas em estágio final de vida útil podem possuir operação por mais 2 ou 3 anos. Em outro extremo, plataformas novas podem ter operação prevista de 30 ou mais anos. Como o processo de estimativa de reserva é feito considerando o planejamento futuro, dados do passado não são considerados.
 
@@ -126,6 +138,8 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     Ao final, deste processo, obtém-se resultados como os exemplificados abaixo.
 
     ![](fig-describe-cluster.png)
+
+    [colocar histograma]
     
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
 
