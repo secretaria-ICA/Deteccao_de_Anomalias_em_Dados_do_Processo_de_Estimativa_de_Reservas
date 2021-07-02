@@ -13,9 +13,7 @@ Trabalho apresentado ao curso [BI MASTER](https://ica.puc-rio.ai/bi-master) como
 
 O trabalho teve como objetivo identificar anomalias em dados utilizados no processo de estimativa de reservas de uma empresa petrolífera.
 
-Periodicamente as empresas de petróleo devem reportar informações sobre suas reservas à entidades (ex.: mercado, governo e certificadores). Como reserva, compreende-se o volume viável economicamente de ser produzido. Este processo envolve a combinação de "projeções de séries temporais", que basicamente se dividem em grupos de variáveis orçamentárias (ex.: investimentos, custos operacionais) e volumétricas (ex.: produção de fluidos).
-
-Estas variáveis se juntam a cenários econômicos (ex.: projeção do dólar e petróleo brent) para subsidiar a previsão de limites econômicos. Faz parte deste processo identificar até que ano é viável economicamente operar com determinada plataforma, assim como o volume total economicamente viável de ser produzido.
+Uma das entregas deste processo é a projeção de valores futuros (produção, custos, investimentos etc.). Existe uma variedade de dados que são compilados para gerar análises envolvendo aspectos econômicos. Por se tratar de estimativas, existem incertezas inerentes ao processo. Por exemplo, os preços futuros do petróleo _brent_ e taxa de câmbio são duas variáveis que precisam ser estimadas para subsidiar as análises.
 
 Além da incerteza inerente, soma-se à complexidade deste processo uma variedade de outros detalhes:
 - Cada grupo de variáveis se divide em várias séries específicas.
@@ -30,7 +28,7 @@ Das abordagens existentes no universo de ciência de dados para detecção de an
 - Contexto _não supervisionado_ do problema (ausência de conhecimento prévio de exemplos classificados como outliers / não outliers).
 - Capacidade do algoritmo em descrever a representação do conhecimento.
 
-A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma distância mediana, através de um mecanismo da implementação de cálculo que considera a distância do elemento para todos os centroides, detalhada na sessão "Treinamento para identificação de anomalias".
+A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada, através de um mecanismo que considera a distância do elemento para todos os centroides, detalhada na sessão "Treinamento para identificação de anomalias".
 
 Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas sem apresentar os dados processados.
 
@@ -91,7 +89,9 @@ sns.countplot(x=km.labels_)
 
 !["Distribuição dos clusters"](fig-countplot.png)
  
-Além da associação de cada elemento a um cluster, é calculada distância euclidiana para cada centroide. Desta forma, é computada a distância do elemento tanto para seu cluster quanto para os demais. Na figura abaixo, cada linha representa uma plataforma e as colunas se referem ao cluster associado e às distâncias para cada centroide.
+Além da associação de cada elemento a um cluster, é calculada distância euclidiana para cada centroide. Desta forma, é computada a distância do elemento tanto para seu cluster quanto para os demais. Na figura abaixo, cada linha representa uma plataforma e as colunas se referem ao cluster associado e às distâncias para cada centroide. Conforme funcionando do _K-Means_, observa-se a menor distância de cada elemento (colunas _dist_) corresponde ao seu cluster associado (coluna _cluster_)
+
+![](fig-dist-clusters.png)
  
 Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. O limite padrão para cada centroide ```c``` pode ser definida como:
 
@@ -111,12 +111,9 @@ Este trabalho propôs uma metodologia ajustada, considerando também a distânci
  
 Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é reforçada devido sua distância para todos os centroides.
 
-O processo se resume em calcular um valor denominado “distância relativa” para cada um dos elementos. A partir da distribuição estatística desta distância, os elementos que possuem maiores distâncias são considerados anômalos. O cálculo é feito no seguinte fluxo:
+O processo se resume em calcular um valor denominado “distância relativa total” para cada um dos elementos. A partir da distribuição estatística desta distância, os elementos que possuem maiores distâncias são considerados anômalos. O cálculo é feito no seguinte fluxo:
 
 1.	Calcular a distância euclidiana de cada elemento para cada centroide
-
-    ![](fig-dist-clusters.png)
-
 
 2.	Calcular estatística dos elementos em relação a cada centroide
     ```
