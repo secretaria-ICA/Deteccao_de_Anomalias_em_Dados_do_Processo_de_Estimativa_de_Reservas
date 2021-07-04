@@ -61,6 +61,21 @@ Nesse contexto comportamental dos dados que o trabalho se propôs a atuar, atrav
 
 # Tratamento dos dados
 
+Em geral, o processo de análise em ciência de dados possui uma etapa de pré-processamento visando realizar ajustes nos dados e deixá-los em formato adequado. Através de um conhecimento prévio da estrutura e representação dos dados para o negócio e tendo em vista o objetivo da análise, foram aplicadas transformações utilizando técnicas de seleção de atributos, criação de _features_, normalização e preenchimento de valores ausentes. A motivação para cada uma dessas etapas segue explicada neste tópico.
+
+## Representação dos dados para análise
+
+Antecedendo as transformações realizadas, é importante destacar como foi planejada a representação dos dados para a análise proposta. O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a`e `var_b` estão anualizados (coluna `ano`).
+
+!["Dados originais"](fig-exemplo-dado-original.png)
+
+A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Seguindo esta linha, pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos.
+
+!["Dados transformados"](fig-exemplo-dado-pivot.png)
+
+definição de atributos
+O mecanismo de identificação de anomalias deste trabalho utiliza Projeções de curvas de plataformas para extração de conhecimento. 
+
 A extração do conhecimento falar aqui da comparação com dados
 
 citar mais sobre o passo a passo para ajustes no dado. Colocar gráfico de box plot
