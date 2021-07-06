@@ -1,4 +1,4 @@
-# Detectção de anomalias no processo de estimativa de reservas
+# Detectção de anomalias em dados do processo de estimativa de reservas
 
 #### Aluno: [Leonardo Cardoso Vicente] (https://github.com/lcvicente).
 #### Orientador: [Leonardo Forero Mendonza] (https://github.com/leofome8).
@@ -61,32 +61,55 @@ Nesse contexto comportamental dos dados que o trabalho se propôs a atuar, atrav
 
 # Tratamento dos dados
 
-Em geral, o processo de análise em ciência de dados possui uma etapa de pré-processamento visando realizar ajustes nos dados e deixá-los em formato adequado. Através de um conhecimento prévio da estrutura e representação dos dados para o negócio e tendo em vista o objetivo da análise, foram aplicadas transformações utilizando técnicas de seleção de atributos, criação de _features_, normalização e preenchimento de valores ausentes. A motivação para cada uma dessas etapas segue explicada neste tópico.
+Em geral, o processo de análise em ciência de dados possui uma etapa de pré-processamento visando realizar ajustes nos dados e deixá-los em formato adequado. Através de um conhecimento prévio da estrutura e representação dos dados para o negócio e tendo em vista o objetivo da análise, foram aplicadas transformações utilizando técnicas de seleção de atributos, criação de _features_, preenchimento de valores ausentes e normalização. A motivação para cada uma dessas etapas segue explicada neste tópico.
 
-## Representação dos dados para análise
+## Representação dos dados e dinâmica de análise
 
-Antecedendo as transformações realizadas, é importante destacar como foi planejada a representação dos dados para a análise proposta. O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a`e `var_b` estão anualizados (coluna `ano`).
+Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória de dois elementos sem repetição.
+
+O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
 
 !["Dados originais"](fig-exemplo-dado-original.png)
 
-A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Seguindo esta linha, pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos.
+A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Então, pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `1`, sendo incrementado sucessivamente.
 
 !["Dados transformados"](fig-exemplo-dado-pivot.png)
 
-definição de atributos
-O mecanismo de identificação de anomalias deste trabalho utiliza Projeções de curvas de plataformas para extração de conhecimento. 
+## Seleção de atributos
 
-A extração do conhecimento falar aqui da comparação com dados
+Projeções de curva podem ter dimensão temporal diferentes. Duas plataformas (A e B) com mesmo ano de início de operação podem ter curva de 20 anos para a plataforma A e 25 anos para a plataforma B por exemplo. Faz parte do processo de estimativa definir o período temporal que será considerado para cada plataforma. Tendo esse período definido, os dados posteriores ao ano definido são desconsiderados. É normal que as projeções contenham períodos de dados bem alongados para subsidiar análises em diferentes cenários.
 
-citar mais sobre o passo a passo para ajustes no dado. Colocar gráfico de box plot
+Na representação de dados adotada neste trabalho (figura acima), o período (variável ano) compõe os atributos de entrada (representados nas colunas). Os algoritmos que foram utilizados neste trabalho, assim como a maioria dos algoritmos de ciência de dados, requerem que o dado de entrada possuam uma mesma dimensão. Desta forma foi preciso definir uma janela temporal para padronizar os dados. Esta definição foi feita a partir da distribuição estatística das dimensões encontradas nos dados, utilizando como referência o valor que representa 75% das dimensões dos dados, conforme o gráfico _boxplot_ abaixo.
 
-falar do preenchimento de dados
+[Figura]
 
-Apesar das projeções de séries terem comportamentos parecidos entre diferentes plataformas, a dimensão temporal dos dados pode variar. Plataformas em estágio final de vida útil podem possuir operação por mais 2 ou 3 anos. Em outro extremo, plataformas novas podem ter operação prevista de 30 ou mais anos. Como o processo de estimativa de reserva é feito considerando o planejamento futuro, dados do passado não são considerados.
+A dimensão temporal dos dados definida nesta etapa é utilizada em outras partes do processo de tratamento de dados e será referenciada no restante do documento como `DIMENSAO_TEMPORAL_PADRAO`.
 
-Em _Machine Learning_, um dos requisitos é que os exemplos tenham dimensão padronizada. Para ajustar os dados neste requisito, foi definido um limite temporal a ser considerado. A partir dos dados históricos usados como treinamento, é verificado a dimensão mediana das projeções de cada plataforma. Esta dimensão somada ao desvio padrão define a dimensão padrão dos dados de entrada (ex.: dimensão padrão de 25 anos).
+## Alinhamento temporal
 
-Para plataformas que não possuam a projeção completa (ex.: projeção de apenas 2 anos), é considerado que os dados existentes correspondem aos anos finais da série. Para manter o padrão de dimensão, os anos “faltantes” são preenchidos com a mediana dos valores existentes em séries de outras plataformas. Este preenchimento fictício não trouxe prejuízo para o objetivo da análise, uma vez que os dados foram preenchidos com um comportamento mediano (não anômalo).
+Uma característica de negócio presente nos dados é que os elementos de análise podem estar em estágios temporais diferentes. Plataformas em estágio final de vida útil podem possuir operação por mais 2 ou 3 anos. Em outro extremo, plataformas novas podem ter operação prevista de 30 ou mais anos. Como o processo de estimativa de reserva é feito considerando o planejamento futuro, dados do passado não são considerados.
+
+Tendo por exemplo uma plataforma A em fim de operação (com projeção de curva para 2 anos) e plataforma B sendo uma plataforma em estágio inicial de produção com projeção de curva para mais 30 anos. Para um mesmo ponto no tempo (ex: ano = 2022), os dois elementos teriam comportamentos bem distintos, mas mesmo assim dentro do padrão esperado para seu estágio operacional. Curvas de produção de óleo tendem a possuir valores ascendentes no início da série, seguindo um padrão de declínio no decorrer do tempo. A figura abaixo ilustra o problema, utilizando como exemplo uma projeção de curva de produção de óleo seguindo metodologia exponencial##.
+
+[Figura]
+
+Faz-se necessário ajustar os dados para que possuam a mesma referência temporal. No exemplo do parágrafo anterior, os dados referentes ao último ano da plataforma A devem estar na mesma referência do último ano da plataforma B. Para isso foi criada a coluna `ano_aj` no conjunto de dados. Os valores desta colunas são calculados após o redimensionamento dos dados na etapa "Seleção de atributos". Considera-se que último ano de cada plataforma corresponde ao valor zero. A partir deste preenchimento inicial, os anos são incrementados ao percorrer a série de valores de forma inversa.
+
+Ao final desta etapa, a coluna `ano_aj` possui as referências de tempo a serem utilizadas de forma a equalizar os dados para comparação.
+
+## Preenchimento de valores ausentes
+
+Embora os dados originais não possuam valores ausentes, as transformações realizadas causaram a inclusão de valores nulos. Elementos de análise que possuem dimensão original menor que `DIMENSAO_TEMPORAL_PADRAO` tiveram sua dimensão aumentada para atender à padronização de dimensão dos dados de entrada.
+
+A partir da coluna `ano_aj`, foi verificada a **variação mediana** de valor que ocorre em cada período para cada variável. Os elementos com dados ausentes foram preenchidos com dados fictícios calculados a partir da variação mediana calculada. Este preenchimento fictício não trouxe prejuízo para o objetivo da análise, uma vez que os dados foram preenchidos com um comportamento mediano (não anômalo).
+
+## Criação de features
+
+Para o par de variáveis analisada em cada rodada, é criada uma nova variável contendo a divisão entre o par de variáveis. Esta etapa visa agregar mais informação aos dados através da relação direta entre as duas variáveis analisadas.
+
+## Normalização
+
+Para eliminar efeitos de diferentes escalas de dados entre diferentes elementos de análise, cada série de dados de cada elemento é normalizado pelo método _Standart Scaller_. Falar aqui que a normalização é um dos principais passos para evidenciar anomalias.
 
 # Treinamento para identificação de anomalias
 
