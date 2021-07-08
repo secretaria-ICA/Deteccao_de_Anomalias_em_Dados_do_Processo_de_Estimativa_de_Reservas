@@ -64,7 +64,7 @@ O exemplo hipotético e simplificado abaixo traz uma representação dos dados n
 
 !["Dados originais"](fig-exemplo-dado-original.png)
 
-A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Então, pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `1`, sendo incrementado sucessivamente.
+A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `1`, sendo incrementado sucessivamente.
 
 !["Dados transformados"](fig-exemplo-dado-pivot.png)
 
@@ -74,7 +74,7 @@ Projeções de curva podem ter dimensão temporal diferentes. Duas plataformas (
 
 Na representação de dados adotada neste trabalho (figura acima), o período (variável ano) compõe os atributos de entrada (representados nas colunas). Os algoritmos que foram utilizados neste trabalho, assim como a maioria dos algoritmos de ciência de dados, requerem que o dado de entrada possuam uma mesma dimensão. Desta forma foi preciso definir uma janela temporal para padronizar os dados. Esta definição foi feita a partir da distribuição estatística das dimensões nos dados de cada elemento de análise , utilizando como referência o valor que representa 75% das dimensões dos dados, conforme o gráfico _boxplot_ abaixo.
 
-["Boxplot de distribuição das dimensões dos dados"](fig-box-plot-tamanho-curva.png)
+!["Boxplot de distribuição das dimensões dos dados"](fig-box-plot-tamanho-curva.png)
 
 A dimensão temporal dos dados definida nesta etapa é utilizada em outras partes do processo de tratamento de dados e será referenciada no restante do documento como `DIMENSAO_TEMPORAL_PADRAO`.
 
