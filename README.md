@@ -40,20 +40,13 @@ Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas
 
 # Contexto do problema
 
-De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis econômicas (ex.: custos e investimentos) e volumétricas (ex.: produção de óleo e gás). Essas categorias possuem valores para cada período da série temporal. A tabela abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos. As células indicadas com ```0,00``` recebem os valores das séries.
+De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis econômicas (ex.: custos e investimentos) e volumétricas (ex.: produção de óleo e gás). Essas categorias possuem valores para cada período da série temporal. A figura abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos.
  
-| Ano | VAR_1 | VAR_2 | VAR_3 |  ...  | VAR_9 |
-|:---:|-------|-------|-------|-------|-------|
-| 1   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
-| 2   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
-| 3   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
-| 4   | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
-| ... | ...   | ...   | ...   | ...   | ...   |  
-| 30  | 0,00  | 0,00  | 0,00  | 0,00  | 0,00  |  
+!["Dados originais"](fig-exemplo-dados-originais-completo.png)
 
 A existência de um mecanismo que melhore a confiabilidade sobre os dados processados pode ser útil para aumentar a qualidade do processo como um todo. Uma série de etapas e detalhes presentes no processo resultam em modificações e ajustes nestas projeções, aumentando a chance de erros.
 
-Mecanismos determinísticos existentes nos sistemas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```VAR_1``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```VAR_2```.
+Mecanismos determinísticos existentes nos sistemas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```var_a``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```var_g```.
 
 No entanto, mesmo atendendo os requisitos de consistência, é possível que os dados contenham comportamentos que necessitem de atenção. Um dígito equivocado a mais em um determinado valor, por exemplo, pode causar uma distorção relevante na análise final e ser de difícil identificação.
 
@@ -67,7 +60,7 @@ Em geral, o processo de análise em ciência de dados possui uma etapa de pré-p
 
 Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória de dois elementos sem repetição.
 
-O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
+O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise, filtrados pelas variáveis selecionadas para uma rodada. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
 
 !["Dados originais"](fig-exemplo-dado-original.png)
 
@@ -79,9 +72,9 @@ A ideia é comparar o comportamento de valores da cada plataforma para identific
 
 Projeções de curva podem ter dimensão temporal diferentes. Duas plataformas (A e B) com mesmo ano de início de operação podem ter curva de 20 anos para a plataforma A e 25 anos para a plataforma B por exemplo. Faz parte do processo de estimativa definir o período temporal que será considerado para cada plataforma. Tendo esse período definido, os dados posteriores ao ano definido são desconsiderados. É normal que as projeções contenham períodos de dados bem alongados para subsidiar análises em diferentes cenários.
 
-Na representação de dados adotada neste trabalho (figura acima), o período (variável ano) compõe os atributos de entrada (representados nas colunas). Os algoritmos que foram utilizados neste trabalho, assim como a maioria dos algoritmos de ciência de dados, requerem que o dado de entrada possuam uma mesma dimensão. Desta forma foi preciso definir uma janela temporal para padronizar os dados. Esta definição foi feita a partir da distribuição estatística das dimensões encontradas nos dados, utilizando como referência o valor que representa 75% das dimensões dos dados, conforme o gráfico _boxplot_ abaixo.
+Na representação de dados adotada neste trabalho (figura acima), o período (variável ano) compõe os atributos de entrada (representados nas colunas). Os algoritmos que foram utilizados neste trabalho, assim como a maioria dos algoritmos de ciência de dados, requerem que o dado de entrada possuam uma mesma dimensão. Desta forma foi preciso definir uma janela temporal para padronizar os dados. Esta definição foi feita a partir da distribuição estatística das dimensões nos dados de cada elemento de análise , utilizando como referência o valor que representa 75% das dimensões dos dados, conforme o gráfico _boxplot_ abaixo.
 
-[Figura]
+["Boxplot de distribuição das dimensões dos dados"](fig-box-plot-tamanho-curva.png)
 
 A dimensão temporal dos dados definida nesta etapa é utilizada em outras partes do processo de tratamento de dados e será referenciada no restante do documento como `DIMENSAO_TEMPORAL_PADRAO`.
 
@@ -89,11 +82,9 @@ A dimensão temporal dos dados definida nesta etapa é utilizada em outras parte
 
 Uma característica de negócio presente nos dados é que os elementos de análise podem estar em estágios temporais diferentes. Plataformas em estágio final de vida útil podem possuir operação por mais 2 ou 3 anos. Em outro extremo, plataformas novas podem ter operação prevista de 30 ou mais anos. Como o processo de estimativa de reserva é feito considerando o planejamento futuro, dados do passado não são considerados.
 
-Tendo por exemplo uma plataforma A em fim de operação (com projeção de curva para 2 anos) e plataforma B sendo uma plataforma em estágio inicial de produção com projeção de curva para mais 30 anos. Para um mesmo ponto no tempo (ex: ano = 2022), os dois elementos teriam comportamentos bem distintos, mas mesmo assim dentro do padrão esperado para seu estágio operacional. Curvas de produção de óleo tendem a possuir valores ascendentes no início da série, seguindo um padrão de declínio no decorrer do tempo. A figura abaixo ilustra o problema, utilizando como exemplo uma projeção de curva de produção de óleo seguindo metodologia exponencial##.
+Tendo por exemplo uma plataforma A em fim de operação (com projeção de curva para 2 anos) e plataforma B sendo uma plataforma em estágio inicial de produção com projeção de curva para mais 30 anos. Para um mesmo ponto no tempo (ex: ano = 2022), os dois elementos teriam comportamentos bem distintos (plataforma A com valores próximos ao seu máximo e plataforma B próximos ao seu mínimo), mas mesmo assim dentro do padrão esperado para seu estágio operacional. Curvas de produção de óleo podem possuir valores ascendentes no início da série, seguindo um padrão de declínio no decorrer do tempo.
 
-[Figura]
-
-Faz-se necessário ajustar os dados para que possuam a mesma referência temporal. No exemplo do parágrafo anterior, os dados referentes ao último ano da plataforma A devem estar na mesma referência do último ano da plataforma B. Para isso foi criada a coluna `ano_aj` no conjunto de dados. Os valores desta colunas são calculados após o redimensionamento dos dados na etapa "Seleção de atributos". Considera-se que último ano de cada plataforma corresponde ao valor zero. A partir deste preenchimento inicial, os anos são incrementados ao percorrer a série de valores de forma inversa.
+Faz-se necessário ajustar os dados para que possuam a mesma referência temporal. No exemplo do parágrafo anterior, os dados referentes ao último ano da plataforma A devem estar na mesma referência do último ano da plataforma B. Para isso foi criada a coluna `ano_aj` no conjunto de dados. Os valores desta colunas são calculados após o redimensionamento dos dados na etapa "Seleção de atributos". Considera-se que último ano de cada plataforma corresponde ao valor `DIMENSAO_TEMPORAL_PADRAO`. A partir deste preenchimento inicial, os anos são decrementados ao percorrer a série de forma inversa.
 
 Ao final desta etapa, a coluna `ano_aj` possui as referências de tempo a serem utilizadas de forma a equalizar os dados para comparação.
 
@@ -103,19 +94,36 @@ Embora os dados originais não possuam valores ausentes, as transformações rea
 
 A partir da coluna `ano_aj`, foi verificada a **variação mediana** de valor que ocorre em cada período para cada variável. Os elementos com dados ausentes foram preenchidos com dados fictícios calculados a partir da variação mediana calculada. Este preenchimento fictício não trouxe prejuízo para o objetivo da análise, uma vez que os dados foram preenchidos com um comportamento mediano (não anômalo).
 
-## Criação de features
+## Criação de _feature_
 
 Para o par de variáveis analisada em cada rodada, é criada uma nova variável contendo a divisão entre o par de variáveis. Esta etapa visa agregar mais informação aos dados através da relação direta entre as duas variáveis analisadas.
 
 ## Normalização
 
-Para eliminar efeitos de diferentes escalas de dados entre diferentes elementos de análise, cada série de dados de cada elemento é normalizado pelo método _Standart Scaller_. Falar aqui que a normalização é um dos principais passos para evidenciar anomalias.
+A normalização é feita no escopo de cada elemento de análise. Os dados das plataformas são transformados considerando o range de valores de cada variável associada à plataforma. Isso permite extrair o comportamento das variáveis em plataforma, possibilitando o algoritmo de detecção identificar padrões e anomalias. O método utilizado para normalização foi o _Standart Scaller_.
+
+```
+# Pseudo-código
+Para cada plataforma "p":
+    df_p = Filtra os dados de entrada da plataforma p
+    Para cada série de valores "v":
+        df_p[v] = normaliza(df_p[v]) # Usa a série v da plataforma p para normalizar os valores usando o método Standart Scaller
+```
+
+## Ajuste de representação
+
+Para que os dados assumam formato a ser processado pelo algoritmo de detecção de anomalias (conforme figura da etapa "Representação dos dados e dinâmica de análise"), as variáveis de entrada devem ser agrupadas com a variável `ano_aj`. Esta transformação foi feita através do comando abaixo:
+
+```
+df_flat = df_norm.pivot_table(values=COLS_VALORES_AN_TOTAL, index=['origem_campo_plataforma'], columns=['ano_aj'])
+```
 
 # Treinamento para identificação de anomalias
 
 Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Neste trabalho, este processamento foi feito considerando duas séries representando custos operacionais e produção de fluidos.
 
 Inicialmente o algoritmo gera uma nova projeção considerando a razão entre as duas séries. Após normalização de valores, os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
+
 ```
 from yellowbrick.cluster import KElbowVisualizer
 from sklearn.cluster import KMeans
