@@ -15,7 +15,7 @@ A estimativa de reservas é uma importante atividade na indústria de petróleo 
 
 As entradas deste processo consistem em planejamentos futuros (projeções) de diversas disciplinas tais como: custos operacionais, custos com abandonos, investimentos (ex.: perfuração de novos poços e entrada de novas unidades) e curvas de produção. Estas projeções são classificadas seguindo critérios estabelecidos em metodologias de referência, defindo as parcelas que correspodem a cada classe de reserva (que possui algumas variações dentro dos grupos de classe Provada, Provável, Possível e Recursos Contingentes).
 
-A incerteza é um fator predominante. A curva de produção, que se transforma em receita, deve considerar uma base de preços de referência (ex.: _petróleo brent_), assim como uma taxa de conversão (câmbio) para a moeda utilizada, que também afeta projeções de custos e investimentos por exemplo.
+A incerteza é um fator predominante. A curva de produção, que se transforma em curva de receita, deve considerar uma base de preços de referência (ex.: _petróleo brent_), assim como uma taxa de conversão (câmbio) para a moeda utilizada, que também afeta projeções de custos e investimentos por exemplo.
 
 Além da incerteza inerente ao processo, outros fatores contribuem para sua complexidade:
 - Cada grupo de variáveis se divide em várias séries específicas.
@@ -23,7 +23,7 @@ Além da incerteza inerente ao processo, outros fatores contribuem para sua comp
 - Cada análise deve ser feita para cada plataforma existente, considerando ainda a multiplicação de dimensão quando se considera a zona de produção (variável relacionada a reservatórios).
 - O processo deve estar alinhado com outros processos paralelos da empresa.
 
-Sobre os dados tratados, é possível afirmar que possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Outras relações não tão óbvias podem existir nos dados.
+Sobre os dados tratados, é possível afirmar que possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Existe também relação entre variáveis: duas séries `var_a` e `var_b` podem ter comportamentos normais quando olhadas individualmente, mas que podem não fazer sentido quando analisadas em conjunto.
 
 O objetivo do trabalho foi encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar outliers em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um ano e cada coluna representa uma variável.
 
@@ -58,19 +58,19 @@ Em geral, o processo de análise em ciência de dados possui uma etapa de pré-p
 
 ## Representação dos dados e dinâmica de análise
 
-Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória de dois elementos sem repetição.
+Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória sem repetição de dois elementos.
 
 O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise, filtrados pelas variáveis selecionadas para uma rodada. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
 
 !["Dados originais"](fig-exemplo-dado-original.png)
 
-A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `1`, sendo incrementado sucessivamente.
+A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em linhas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `0`, sendo incrementado sucessivamente.
 
 !["Dados transformados"](fig-exemplo-dado-pivot.png)
 
 ## Seleção de atributos
 
-Projeções de curva podem ter dimensão temporal diferentes. Duas plataformas (A e B) com mesmo ano de início de operação podem ter curva de 20 anos para a plataforma A e 25 anos para a plataforma B por exemplo. Faz parte do processo de estimativa definir o período temporal que será considerado para cada plataforma. Tendo esse período definido, os dados posteriores ao ano definido são desconsiderados. É normal que as projeções contenham períodos de dados bem alongados para subsidiar análises em diferentes cenários.
+Projeções de curva podem ter dimensão temporal diferentes. Duas plataformas (A e B) com mesmo ano de início de operação podem ter curva de 20 anos para a plataforma A e 25 anos para a plataforma B por exemplo. Faz parte do processo de negócio definir o período temporal que será considerado para cada plataforma. Tendo esse período definido, os dados posteriores ao ano definido são desconsiderados. É normal que as projeções contenham períodos de dados bem alongados para subsidiar análises em diferentes cenários.
 
 Na representação de dados adotada neste trabalho (figura acima), o período (variável ano) compõe os atributos de entrada (representados nas colunas). Os algoritmos que foram utilizados neste trabalho, assim como a maioria dos algoritmos de ciência de dados, requerem que o dado de entrada possuam uma mesma dimensão. Desta forma foi preciso definir uma janela temporal para padronizar os dados. Esta definição foi feita a partir da distribuição estatística das dimensões nos dados de cada elemento de análise , utilizando como referência o valor que representa 75% das dimensões dos dados.
 
@@ -88,7 +88,7 @@ Ao final desta etapa, a coluna `ano_aj` possui as referências de tempo a serem 
 
 ## Preenchimento de valores ausentes
 
-Embora os dados originais não possuam valores ausentes, as transformações realizadas causaram a inclusão de valores nulos. Elementos de análise que possuem dimensão original menor que `DIMENSAO_TEMPORAL_PADRAO` tiveram sua dimensão aumentada para atender à padronização de dimensão dos dados de entrada.
+Embora os dados originais não possuam valores ausentes, as transformações realizadas podem causar a inclusão de valores nulos. Elementos de análise que possuem dimensão original menor que `DIMENSAO_TEMPORAL_PADRAO` tiveram sua dimensão aumentada para atender à padronização de dimensão dos dados de entrada.
 
 A partir da coluna `ano_aj`, foi verificada a **variação mediana** de valor que ocorre em cada período para cada variável. Os elementos com dados ausentes foram preenchidos com dados fictícios calculados a partir da variação mediana calculada. Este preenchimento fictício não trouxe prejuízo para o objetivo da análise, uma vez que os dados foram preenchidos com um comportamento mediano (não anômalo).
 
@@ -105,7 +105,8 @@ A normalização é feita no escopo de cada elemento de análise. Os dados das p
 Para cada plataforma "p":
     df_p = Filtra os dados de entrada da plataforma p
     Para cada série de valores "v":
-        df_p[v] = normaliza(df_p[v]) # Usa a série v da plataforma p para normalizar os valores usando o método Standart Scaller
+        df_p[v] = normaliza(df_p[v]) # Usa a série v da plataforma p
+                                     # para normalizar os valores usando o método Standart Scaller
 ```
 
 ## Ajuste de representação
@@ -116,11 +117,28 @@ Para que os dados assumam formato a ser processado pelo algoritmo de detecção 
 df_flat = df_norm.pivot_table(values=COLS_VALORES_AN_TOTAL, index=['origem_campo_plataforma'], columns=['ano_aj'])
 ```
 
+## Visualizando dados em dimensão reduzida
+
+O método estatístico TSNE (_T-Distributed Stochastic Neighbor Embedding_) realiza redução da dimensaionalidade de dados de forma não linear, visando otimizar ao máximo a representação dos dados. Neste caso, foi feito um processamento para visualizar os dados em duas dimensões (após todas as etapas de tratemento, os dados processados neste trabalho possuiam 81 dimensões).
+
+A representação foi feita conforme segue.
+
+```
+from sklearn.manifold import TSNE
+tsne = TSNE(n_components=2, random_state=0)
+tsne_values = tsne.fit_transform(df_flat)
+df2dim = pd.DataFrame(columns=['D1', 'D2'], data=tsne_values)
+df2dim.index = df_flat.index
+df2dim.plot(x='D1', y='D2', style='o')
+```
+
+![](fig-tsne.png)
+
 # Treinamento para identificação de anomalias
 
 Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Neste trabalho, este processamento foi feito considerando duas séries representando custos operacionais e produção de fluidos.
 
-Inicialmente o algoritmo gera uma nova projeção considerando a razão entre as duas séries. Após normalização de valores, os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
+Os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
 
 ```
 from yellowbrick.cluster import KElbowVisualizer
@@ -148,8 +166,12 @@ sns.countplot(x=km.labels_)
 Além da associação de cada elemento a um cluster, é calculada distância euclidiana para cada centroide. Desta forma, é computada a distância do elemento tanto para seu cluster quanto para os demais. Na figura abaixo, cada linha representa uma plataforma e as colunas se referem ao cluster associado e às distâncias para cada centroide. Conforme funcionando do _K-Means_, observa-se a menor distância de cada elemento (colunas _dist_) corresponde ao seu cluster associado (coluna _cluster_)
 
 ![](fig-dist-clusters.png)
- 
-Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. O limite padrão para cada centroide ```c``` pode ser definida como:
+
+## Identificação de _outlier local_
+
+Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. Este trabalho considera este método como _outlier local_.
+
+O limite padrão para cada centroide ```c``` pode ser definida como:
 
 ```
 # Pseudo-código
@@ -159,13 +181,15 @@ Para cada elemento "e" associado ao centroide "c":
     armazena a distância euclidiana de "e" para "c" ao fim na lista "distancias"
 limite[c] = mediana(distancias) + x * desvio_padrao(distancias)
 ```
-Podendo ```x``` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia.
+Podendo ```x``` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia, que no case deste trabalho ficou definido em `x = 1`.
 
-Este trabalho propôs uma metodologia ajustada, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + desvio padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
+## Identificação de _outlier global_
+
+Este trabalho propôs uma metodologia complementar, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + fator_sensibilidade * desvio_padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
 
 ![](fig-clusters-centroides.png)
  
-Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é reforçada devido sua distância para todos os centroides.
+Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é aumentada devido sua distância para todos os centroides.
 
 O processo se resume em calcular um valor denominado “distância relativa total” para cada um dos elementos. A partir da distribuição estatística desta distância, os elementos que possuem maiores distâncias são considerados anômalos. O cálculo é feito no seguinte fluxo:
 
@@ -183,7 +207,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
 
     ![](fig-describe-cluster.png)
 
-    [colocar histograma]
+    ![](fig-histograma.png)
     
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
 
@@ -217,17 +241,13 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     # Pseudo-código
     distancia_relativa_global = mediana(distancia_relativa_total) + desvio_padrao(distancia_relativa_total)
     ```
-O valor de ```distancia_relativa_global``` é usado para identificar anomalias. Elementos cuja ```distancia_relativa_total``` sejam maiores que ```distancia_relativa_global``` são considerados anômalos.
+a distribuição de valores de ```distancia_relativa_global``` é usado para identificar anomalias. Elementos cuja ```distancia_relativa_total``` sejam maiores que ```distancia_relativa_global``` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
+
+![](fig-histograma-dist-ref.png)
 
 A figura abaixo exemplifica os valores de cada elemento calculados neste processo.
 
-![](fig-dist-ref-clusters.png)
-
-# Identificação de anomalias em dados não treinados
-
-O processo explicado no item 4 tem como premissa que os dados de treinamento são confiáveis, possuindo nenhuma ou pouca anomalia.
-
-Para novos dados, o fluxo de tratamento dos dados deve utilizar do conhecimento formado na etapa de treinamento, que se resume em usar a memória dos parâmetros definidos no passo de treinamento (normalizações, associação a clusters e estatísticas de distâncias) para identificar as anomalias.
+![](fig-dist-final.png)
 
 # Resultados e conclusões
 
@@ -238,5 +258,7 @@ Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta
 A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada.
 
 Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como possível adoção desta metodologia no processo, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Está sendo considerado também rodar o algoritmo para cada combinação de séries, ampliando o escopo para todo o universo de dados e trazendo outras medidas de análise.
+
+TODO: Citar que foi tudo feito só na fase treinamento.
 
 Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
