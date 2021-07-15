@@ -11,9 +11,9 @@ Trabalho apresentado ao curso [BI MASTER](https://ica.puc-rio.ai/bi-master) como
 
 # Resumo
 
-A estimativa de reservas é uma importante atividade na indústria de petróleo e gás. Por meio dela, as empresas deste ramo avaliam a economicidade de seus projetos de produção e investimento. Entidades governamentais exigem que as empresas realizem este processo seguindo metodologias certificadas e reconhecidas internacionalmente. Empresas que possuem ações listadas em bolsas de valores, periodicamente precisam também divulgar ao mercado essas informações. As reservas estão associadas à capacidade da empresa em gerar receita através da venda da produção.
+A estimativa de reservas é uma importante atividade na indústria de petróleo e gás. Por meio dela, as empresas avaliam a economicidade de seus projetos de produção e investimento. Entidades governamentais exigem que as empresas realizem este processo seguindo metodologias certificadas e reconhecidas internacionalmente. As reservas estão associadas à capacidade da empresa em gerar receita através da venda da produção.
 
-As entradas deste processo consistem em planejamentos futuros (projeções) de diversas disciplinas tais como: custos operacionais, custos com abandonos, investimentos (ex.: perfuração de novos poços e entrada de novas unidades) e curvas de produção. Estas projeções são classificadas seguindo critérios estabelecidos em metodologias de referência, defindo as parcelas que correspodem a cada classe de reserva (que possui algumas variações dentro dos grupos de classe Provada, Provável, Possível e Recursos Contingentes).
+As entradas deste processo consistem em planejamentos futuros (projeções) de diversas disciplinas tais como: custos operacionais, custos com abandonos, investimentos (ex.: perfuração de novos poços e entrada de novas unidades) e curvas de produção. Estas projeções são classificadas usando critérios estabelecidos em metodologias de referência, defindo as parcelas que correspodem a cada classe de reserva (que possui algumas variações dentro dos grupos de classe Provada, Provável, Possível e Recursos Contingentes).
 
 A incerteza é um fator predominante. A curva de produção, que se transforma em curva de receita, deve considerar uma base de preços de referência (ex.: _petróleo brent_), assim como uma taxa de conversão (câmbio) para a moeda utilizada, que também afeta projeções de custos e investimentos por exemplo.
 
@@ -23,18 +23,13 @@ Além da incerteza inerente ao processo, outros fatores contribuem para sua comp
 - Cada análise deve ser feita para cada plataforma existente, considerando ainda a multiplicação de dimensão quando se considera a zona de produção (variável relacionada a reservatórios).
 - O processo deve estar alinhado com outros processos paralelos da empresa.
 
-Sobre os dados tratados, é possível afirmar que possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Existe também relação entre variáveis: duas séries `var_a` e `var_b` podem ter comportamentos normais quando olhadas individualmente, mas que podem não fazer sentido quando analisadas em conjunto.
+As séries de dados tratados possuem um comportamento implícito. Individualmente as séries temporais possuem um padrão minimamente definido e conhecido. Existe também relação entre variáveis: duas séries `var_a` e `var_b` podem ter comportamentos normais quando olhadas individualmente, mas podem não fazer sentido quando analisadas em conjunto.
 
-O objetivo do trabalho foi encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar outliers em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um ano e cada coluna representa uma variável.
+O objetivo do trabalho é encontrar e analisar comportamentos implícitos nos dados e utilizar este comportamento para identificar _outliers_ em novas projeções. Como projeção subentende-se uma matriz na qual cada linha representa um período temporal (ano) e cada coluna representa uma variável.
 
-A metodologia desenvolvida contempla a comparação uma nova projeção (```matriz_p```) com comportamentos padrões encontrados em dados históricos, medindo o “grau de aderência” (confiabilidade) de ```matriz_p``` com cada um dos padrões existentes. A projeção é rotulada como como _outlier_ caso seu grau de aderência esteja acima de um limite calculado.
+Foram testadas metodologias basedas em distâncias para padrões identificados nos próprios dados, comparando uma nova projeção (`matriz_p`) com comportamentos padrões encontrados em dados históricos, medindo o “grau de aderência” (confiabilidade) de `matriz_p` com cada um dos padrões existentes. A projeção é rotulada como como _outlier_ caso seu grau de aderência esteja acima de um limite calculado.
 
-Das abordagens existentes no universo de ciência de dados para detecção de anomalias, foi escolhido o algoritmo _K-Means_ para tratar o problema. A escolha foi motivada por:
-
-- Contexto _não supervisionado_ do problema (ausência de conhecimento prévio de exemplos classificados como outliers / não outliers).
-- Capacidade do algoritmo em descrever a representação do conhecimento.
-
-A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada, através de um mecanismo que considera a distância do elemento para todos os centroides, detalhada na sessão "Treinamento para identificação de anomalias".
+Um método puramente estatístico realiza identificação de anomalia a partir da distribuição de distâncias para um ponto de referência. Outros dois métodos utilizam o algoritmo _K-Means_ para tratar o problema. A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada.
 
 Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas omitindo os dados processados.
 
@@ -46,11 +41,11 @@ De forma resumida os dados originais são agrupados em 9 categorias, representan
 
 A existência de um mecanismo que melhore a confiabilidade sobre os dados processados pode ser útil para aumentar a qualidade do processo como um todo. Uma série de etapas e detalhes presentes no processo resultam em modificações e ajustes nestas projeções, aumentando a chance de erros.
 
-Mecanismos determinísticos existentes nos sistemas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável ```var_a``` em determinado ano, obrigatoriamente deve haver valor válido para a variável ```var_g```.
+Mecanismos determinísticos existentes nos sistemas deste processo tratam uma variedade de inconsistências possíveis. Um exemplo típico de inconsistência é: caso exista valor válido (maior que zero) para a variável `var_a` em determinado ano, obrigatoriamente deve haver valor válido para a variável `var_g`.
 
 No entanto, mesmo atendendo os requisitos de consistência, é possível que os dados contenham comportamentos que necessitem de atenção. Um dígito equivocado a mais em um determinado valor, por exemplo, pode causar uma distorção relevante na análise final e ser de difícil identificação.
 
-Nesse contexto comportamental dos dados que o trabalho se propôs a atuar, através de um algoritmo que identifique distorções em relação a padrões existentes nos próprios dados.
+O trabalho se propõe a atuar neste contexto comportamental, através de um algoritmo que identifique distorções em relação a padrões existentes nos próprios dados.
 
 # Tratamento dos dados
 
@@ -98,7 +93,7 @@ Para o par de variáveis analisada em cada rodada, é criada uma nova variável 
 
 ## Normalização
 
-A normalização é feita no escopo de cada elemento de análise. Os dados das plataformas são transformados considerando o range de valores de cada variável associada à plataforma. Isso permite extrair o comportamento das variáveis em plataforma, possibilitando o algoritmo de detecção identificar padrões e anomalias. O método utilizado para normalização foi o _Standart Scaller_.
+A normalização é feita no escopo de cada elemento de análise. Os dados das plataformas são transformados considerando o range de valores de cada variável associada à plataforma. Isso permite extrair o comportamento das séries em cada plataforma, possibilitando o algoritmo de detecção identificar padrões e anomalias. O método utilizado para normalização foi o _Standart Scaller_.
 
 ```
 # Pseudo-código
@@ -114,12 +109,16 @@ Para cada plataforma "p":
 Para que os dados assumam formato a ser processado pelo algoritmo de detecção de anomalias (conforme figura da etapa "Representação dos dados e dinâmica de análise"), as variáveis de entrada devem ser agrupadas com a variável `ano_aj`. Esta transformação foi feita através do comando abaixo:
 
 ```
-df_flat = df_norm.pivot_table(values=COLS_VALORES_AN_TOTAL, index=['origem_campo_plataforma'], columns=['ano_aj'])
+df_flat = df_norm.pivot_table(
+            values=COLS_VALORES_AN_TOTAL,
+            index=['origem_campo_plataforma'],
+            columns=['ano_aj']
+            )
 ```
 
 ## Visualizando dados em dimensão reduzida
 
-O método estatístico TSNE (_T-Distributed Stochastic Neighbor Embedding_) realiza redução da dimensaionalidade de dados de forma não linear, visando otimizar ao máximo a representação dos dados. Neste caso, foi feito um processamento para visualizar os dados em duas dimensões (após todas as etapas de tratemento, os dados processados neste trabalho possuiam 81 dimensões).
+O método estatístico TSNE (_T-Distributed Stochastic Neighbor Embedding_) realiza redução da dimensionalidade de dados de forma não linear, visando otimizar ao máximo a representação dos dados. Neste caso, foi feito um processamento para visualizar os dados em duas dimensões (após todas as etapas de tratemento, os dados processados neste trabalho possuíam 81 dimensões).
 
 A representação foi feita conforme segue.
 
@@ -133,6 +132,8 @@ df2dim.plot(x='D1', y='D2', style='o')
 ```
 
 ![](fig-tsne.png)
+
+Este passo foi feito apenas para permitir uma visualização dos dados, sem realizar alteraçoões nos dados a serem processados pelos algoritmos de tratamento de anomalia.
 
 # Treinamento para identificação de anomalias
 
@@ -171,7 +172,7 @@ Além da associação de cada elemento a um cluster, é calculada distância euc
 
 Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. Este trabalho considera este método como _outlier local_.
 
-O limite padrão para cada centroide ```c``` pode ser definida como:
+O limite padrão para cada centroide `c` pode ser definida como:
 
 ```
 # Pseudo-código
@@ -181,7 +182,7 @@ Para cada elemento "e" associado ao centroide "c":
     armazena a distância euclidiana de "e" para "c" ao fim na lista "distancias"
 limite[c] = mediana(distancias) + x * desvio_padrao(distancias)
 ```
-Podendo ```x``` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia, que no case deste trabalho ficou definido em `x = 1`.
+Podendo `x` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia, que no case deste trabalho ficou definido em `x = 1`.
 
 ## Identificação de _outlier global_
 
@@ -207,8 +208,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
 
     ![](fig-describe-cluster.png)
 
-    ![](fig-histograma.png)
-    
+        
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (mediana + desvio padrão)
 
     ![](fig-dist-ref-clusters.png)
@@ -221,11 +221,16 @@ O processo se resume em calcular um valor denominado “distância relativa tota
         Para cada centroide "c":
             distancia_relativa[e,c] = dist_euclid[e,c] / dist_refer[k, c]
     ```
-    A fórmula aplicada neste passo representa a razão entre a distância de cada elemento ```e``` para uma distância referencial entre o centroide ```c``` e os elementos do centroide ```k``` (centroide associado ao elemento ```e```).
+    A fórmula aplicada neste passo representa a razão entre a distância de cada elemento `e` para uma distância referencial entre o centroide `c` e os elementos do centroide `k` (centroide associado ao elemento `e`).
     
     Resultados próximos ou maiores que 1 representam uma distância relativa alta em relação à amostra.
     
     Este passo realiza uma normalização das distâncias dos elementos para os centroides, expressando-as de forma proporcional às distribuições das distâncias observadas no uninverso amostral.
+
+    O histograma abaixo mostra a distribuição dos dados para cada distância relativa calculada.
+
+    ![](fig-histograma.png)
+
 
 5.	Calcular a distância relativa total para cada elemento
     ```
@@ -241,7 +246,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     # Pseudo-código
     distancia_relativa_global = mediana(distancia_relativa_total) + desvio_padrao(distancia_relativa_total)
     ```
-a distribuição de valores de ```distancia_relativa_global``` é usado para identificar anomalias. Elementos cuja ```distancia_relativa_total``` sejam maiores que ```distancia_relativa_global``` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
+a distribuição de valores de `distancia_relativa_global` é usado para identificar anomalias. Elementos cuja `distancia_relativa_total` sejam maiores que `distancia_relativa_global` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
 
 ![](fig-histograma-dist-ref.png)
 
