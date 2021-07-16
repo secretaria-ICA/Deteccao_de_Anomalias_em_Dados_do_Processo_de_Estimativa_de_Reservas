@@ -29,9 +29,9 @@ O objetivo do trabalho é encontrar e analisar comportamentos implícitos nos da
 
 Foram testadas metodologias basedas em distâncias para padrões identificados nos próprios dados, comparando uma nova projeção (`matriz_p`) com comportamentos padrões encontrados em dados históricos, medindo o “grau de aderência” (confiabilidade) de `matriz_p` com cada um dos padrões existentes. A projeção é rotulada como como _outlier_ caso seu grau de aderência esteja acima de um limite calculado.
 
-Um método puramente estatístico realiza identificação de anomalia a partir da distribuição de distâncias para um ponto de referência. Outros dois métodos utilizam o algoritmo _K-Means_ para tratar o problema. A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada.
+O trabalho foca no uso do algoritmo de clusterização _K-Means_ para tratar o problema. A identificação de um elemento como anômalo é feita a partir do cálculo de distâncias para os centroides comparado a uma estatística previamente calculada.
 
-Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas omitindo os dados processados.
+Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas omitindo os dados reais.
 
 # Contexto do problema
 
@@ -45,7 +45,7 @@ Mecanismos determinísticos existentes nos sistemas deste processo tratam uma va
 
 No entanto, mesmo atendendo os requisitos de consistência, é possível que os dados contenham comportamentos que necessitem de atenção. Um dígito equivocado a mais em um determinado valor, por exemplo, pode causar uma distorção relevante na análise final e ser de difícil identificação.
 
-O trabalho se propõe a atuar neste contexto comportamental, através de um algoritmo que identifique distorções em relação a padrões existentes nos próprios dados.
+O trabalho se propõe a atuar neste contexto comportamental, através de um algoritmo que identifique distorções em relação a padrões existentes nos próprios dados. Para o contexto deste trabalho foi considerada a análise de duas séries de entrada, que serão referenciadas como `var_a` e `var_b`.
 
 # Tratamento dos dados
 
@@ -53,9 +53,7 @@ Em geral, o processo de análise em ciência de dados possui uma etapa de pré-p
 
 ## Representação dos dados e dinâmica de análise
 
-Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória sem repetição de dois elementos.
-
-O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise, filtrados pelas variáveis selecionadas para uma rodada. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
+Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise, filtrados pelas variáveis selecionadas para análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
 
 !["Dados originais"](fig-exemplo-dado-original.png)
 
@@ -89,7 +87,7 @@ A partir da coluna `ano_aj`, foi verificada a **variação mediana** de valor qu
 
 ## Criação de _feature_
 
-Para o par de variáveis analisada em cada rodada, é criada uma nova variável contendo a divisão entre o par de variáveis. Esta etapa visa agregar mais informação aos dados através da relação direta entre as duas variáveis analisadas.
+Para o par de variáveis analisada, é criada uma nova variável contendo a divisão entre o par de variáveis. Esta etapa visa agregar mais informação aos dados através da relação direta entre as duas variáveis analisadas.
 
 ## Normalização
 
@@ -116,6 +114,12 @@ df_flat = df_norm.pivot_table(
             )
 ```
 
+## Analisando e visualizando os dados
+
+A partir da representação obtida com as transformações, é possível verificar a distribuição de cada atributo conforme exemplo abaixo. Os histogramas demostram que a maioria das variáveis se aproximam de uma distribuição normal. Embora o foco do trabalho ser em métodos de clusterização, os histogramas já deixam evidentes a existência de alguns _outliers_, que podem ser explorados com outras técnicas.
+
+![](fig-histograma-flat)
+
 ## Visualizando dados em dimensão reduzida
 
 O método estatístico TSNE (_T-Distributed Stochastic Neighbor Embedding_) realiza redução da dimensionalidade de dados de forma não linear, visando otimizar ao máximo a representação dos dados. Neste caso, foi feito um processamento para visualizar os dados em duas dimensões (após todas as etapas de tratemento, os dados processados neste trabalho possuíam 81 dimensões).
@@ -135,11 +139,9 @@ df2dim.plot(x='D1', y='D2', style='o')
 
 Este passo foi feito apenas para permitir uma visualização dos dados, sem realizar alteraçoões nos dados a serem processados pelos algoritmos de tratamento de anomalia.
 
-# Treinamento para identificação de anomalias
+# Identificação de anomalias
 
-Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Neste trabalho, este processamento foi feito considerando duas séries representando custos operacionais e produção de fluidos.
-
-Os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
+Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
 
 ```
 from yellowbrick.cluster import KElbowVisualizer
@@ -225,7 +227,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     
     Resultados próximos ou maiores que 1 representam uma distância relativa alta em relação à amostra.
     
-    Este passo realiza uma normalização das distâncias dos elementos para os centroides, expressando-as de forma proporcional às distribuições das distâncias observadas no uninverso amostral.
+    Este passo realiza uma normalização das distâncias dos elementos para os centroides, expressando-as de forma proporcional às distribuições das distâncias observadas no universo amostral.
 
     O histograma abaixo mostra a distribuição dos dados para cada distância relativa calculada.
 
@@ -246,7 +248,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     # Pseudo-código
     distancia_relativa_global = mediana(distancia_relativa_total) + desvio_padrao(distancia_relativa_total)
     ```
-a distribuição de valores de `distancia_relativa_global` é usado para identificar anomalias. Elementos cuja `distancia_relativa_total` sejam maiores que `distancia_relativa_global` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
+A distribuição de valores de `distancia_relativa_global` é usada para identificar anomalias. Elementos cuja `distancia_relativa_total` sejam maiores que `distancia_relativa_global` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
 
 ![](fig-histograma-dist-ref.png)
 
@@ -267,3 +269,6 @@ Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contex
 TODO: Citar que foi tudo feito só na fase treinamento.
 
 Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
+
+
+A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória sem repetição de dois elementos.
