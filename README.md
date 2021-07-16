@@ -118,7 +118,7 @@ df_flat = df_norm.pivot_table(
 
 A partir da representação obtida com as transformações, é possível verificar a distribuição de cada atributo conforme exemplo abaixo. Os histogramas demostram que a maioria das variáveis se aproximam de uma distribuição normal. Embora o foco do trabalho ser em métodos de clusterização, os histogramas já deixam evidentes a existência de alguns _outliers_, que podem ser explorados com outras técnicas.
 
-![](fig-histograma-flat)
+![](fig-histograma-flat.png)
 
 ## Visualizando dados em dimensão reduzida
 
