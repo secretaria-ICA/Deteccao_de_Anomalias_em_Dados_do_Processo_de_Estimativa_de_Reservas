@@ -116,7 +116,7 @@ df_flat = df_norm.pivot_table(
 
 ## Analisando e visualizando os dados
 
-A partir da representação obtida com as transformações, é possível verificar a distribuição de cada atributo conforme exemplo abaixo. Os histogramas demostram que a maioria das variáveis se aproximam de uma distribuição normal. Embora o foco do trabalho ser em métodos de clusterização, os histogramas já deixam evidentes a existência de alguns _outliers_, que podem ser explorados com outras técnicas.
+A partir da representação obtida com as transformações, é possível verificar a distribuição de cada atributo conforme exemplo abaixo. Os histogramas demostram que a maioria das variáveis se aproximam de uma distribuição normal. Embora o foco do trabalho ser em métodos de clusterização, os histogramas deixam evidentes a existência de alguns _outliers_, que podem ser explorados com outras técnicas.
 
 ![](fig-histograma-flat.png)
 
@@ -141,7 +141,11 @@ Este passo foi feito apenas para permitir uma visualização dos dados, sem real
 
 # Identificação de anomalias
 
-Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
+Dados históricos de processos passados foram utilizados como referência para o modelo extrair conhecimento. Foram utilizadas três abordagens diferentes para identificar anomalias.
+
+## Métodos baseados em clusterização
+
+Os dados são submetidos ao algoritmo _KElbow_ buscando identificar quantidade ideal de clusters para segmentar os dados.
 
 ```
 from yellowbrick.cluster import KElbowVisualizer
@@ -170,7 +174,7 @@ Além da associação de cada elemento a um cluster, é calculada distância euc
 
 ![](fig-dist-clusters.png)
 
-## Identificação de _outlier local_
+### Identificação de _outlier local_
 
 Uma forma de identificar anomalias é considerar um elemento como anômalo caso a distância para seu centroide exceda um limite padrão. Este trabalho considera este método como _outlier local_.
 
@@ -186,7 +190,7 @@ limite[c] = mediana(distancias) + x * desvio_padrao(distancias)
 ```
 Podendo `x` ser definido como um fator de sensibilidade permitindo identificar mais elementos ou menos elementos como anomalia, que no case deste trabalho ficou definido em `x = 1`.
 
-## Identificação de _outlier global_
+### Identificação de _outlier global_
 
 Este trabalho propôs uma metodologia complementar, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (mediana + fator_sensibilidade * desvio_padrão) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
 
@@ -248,6 +252,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     # Pseudo-código
     distancia_relativa_global = mediana(distancia_relativa_total) + desvio_padrao(distancia_relativa_total)
     ```
+
 A distribuição de valores de `distancia_relativa_global` é usada para identificar anomalias. Elementos cuja `distancia_relativa_total` sejam maiores que `distancia_relativa_global` são considerados anômalos. O histograma exemplifica a distruição dos valores calculados.
 
 ![](fig-histograma-dist-ref.png)
@@ -256,19 +261,41 @@ A figura abaixo exemplifica os valores de cada elemento calculados neste process
 
 ![](fig-dist-final.png)
 
+## Método baseado em rede neural
+
+A partir da proposta de redes neurais _auto-encoders_, foi implementada uma arquitetura de rede neural que tenta reproduzir em sua saída o próprio dado de entrada. Assume-se a hipótese que a rede ajustará seus parâmetros com base em padrões observados nos dados, sendo capaz de reconstruir (com poucos ruídos) o dado de entrada na sua camada de saída. A existência de algum dado anômalo (fora do padrão) na camada de entrada causa um índice elevado de erro ao reconstruir o dado na camada de saída. O erro (comparação entre entrada `X` e saída `Y`) é utilizado como métrica de anomalia. Erros próximos de zero indicam que rede conseguiu reconstruir o dado com qualidade.
+
+A arquitetura da rede foi configurada conforme segue.
+
+![](fig-arquitetura-rede.png)
+
+A curva de erro do treinamento está ilustrada na figura abaixo.
+
+![](fig-grafico-rn.png)
+
+Analisando os erros, foi obtido o gráfico _box-plot_ abaixo.
+
+![](fig-box-plot-erro-rn.png)
+
+Seguindo a mesma linha estatistica usada nos métodos de clusterização, foi verificado a mediana e desvio padrão da distribuição dos valores de erros. Foi definido que um valor de erro acima do limite (`mediana` + `desvio_padrão`) identifica o elemento como anômalo.
+
 # Resultados e conclusões
 
 Os resultados demonstraram uma boa aplicabilidade da metodologia ao processo. Além da identificação de comportamentos anômalos, foi possível também identificar os comportamentos predominantes nos dados.
 
+Conforme [citar aqui trabalho da fase de tratamento]
+
 Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta expectativa se confirmou. No entanto, esta situação não invalida a metodologia, uma vez que se trata de particularidades pontuais em alguns dados.
 
-A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada.
+Os métodos de identificação de outliers _local_ e _global_ produziram os mesmos resultados para 266 elementos dos 291 analisados, correspondendo a 91% dos casos. A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada. Os resultados produzidos por ambas metodologias estão detalhados na figura abaixo.
 
-Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como possível adoção desta metodologia no processo, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Está sendo considerado também rodar o algoritmo para cada combinação de séries, ampliando o escopo para todo o universo de dados e trazendo outras medidas de análise.
+[](fig-conf-mat.png)
 
-TODO: Citar que foi tudo feito só na fase treinamento.
+Comparando a metodologia usando redes neurais com as metodologias usando clusterização, foram obtidos os resultados abaixo.
 
-Como evolução deste trabalho, é pretendido testar outras metodologias de identificação de anomalias como auto-encoders e método de somas acumulativas (cumsum).
+[](fig-conf-mat.png)
 
+Esses resultados demonstram que os dados recebem o mesmo diagnóstico para a maioria dos casos com base nos algoritmos testados. O `fator de sensibilidade` (multiplicador do `desvio padrão`) foi mantido com valor `1`, ampliando a quantidade de elementos identificados como anômalos. Este indicador precisa ser testado com valores maiores, reduzindo assim a ocorrência de falsos positivos. Este teste deve ser feito acompanhado com especialistas de negócio para adotar o uso de um valor que otimize o resultado final.
 
-A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória sem repetição de dois elementos.
+Para o objetivo deste trabalho, todo o universo de dados foi utilizado no contexto de treinamento. Entretanto, como possível adoção desta metodologia no processo e implementação de melhorias, o tratamento dos dados está sendo adaptado para considerar uma etapa de treinamento e outra de deteção. Está sendo considerado também rodar o algoritmo para cada combinação de séries. A ideia é que o algoritmo de detecção de anomalia realize rodadas processando todas as séries do conjunto de dados de forma particionada, onde cada rodada processa um par de séries. A relação de pares de séries é extraída através de uma análise combinatória sem repetição de dois elementos.
+
