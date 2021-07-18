@@ -289,11 +289,11 @@ Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta
 
 Os métodos de identificação de outliers _local_ e _global_ produziram os mesmos resultados para 266 elementos dos 291 analisados, correspondendo a 91% dos casos. A metodologia ajustada de uso do algoritmo K-Means para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada. Os resultados produzidos por ambas metodologias estão detalhados na figura abaixo.
 
-[](fig-conf-mat.png)
+![](fig-conf-mat.png)
 
 Comparando a metodologia usando redes neurais com as metodologias usando clusterização, foram obtidos os resultados abaixo.
 
-[](fig-conf-mat.png)
+![](fig-conf-mat.png)
 
 Esses resultados demonstram que os dados recebem o mesmo diagnóstico para a maioria dos casos com base nos algoritmos testados. O `fator de sensibilidade` (multiplicador do `desvio padrão`) foi mantido com valor `1`, ampliando a quantidade de elementos identificados como anômalos. Este indicador precisa ser testado com valores maiores, reduzindo assim a ocorrência de falsos positivos. Este teste deve ser feito acompanhado com especialistas de negócio para adotar o uso de um valor que otimize o resultado final.
 
