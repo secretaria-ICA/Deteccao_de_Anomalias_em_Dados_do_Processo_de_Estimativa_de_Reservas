@@ -293,7 +293,7 @@ Os métodos de identificação de outliers _local_ e _global_ produziram os mesm
 
 Comparando a metodologia usando redes neurais com as metodologias usando clusterização, foram obtidos os resultados abaixo.
 
-![](fig-conf-mat.png)
+![](fig-conf-mat-rn-cluster.png)
 
 Esses resultados demonstram que os dados recebem o mesmo diagnóstico para a maioria dos casos com base nos algoritmos testados. O `fator de sensibilidade` (multiplicador do `desvio padrão`) foi mantido com valor `1`, ampliando a quantidade de elementos identificados como anômalos. Este indicador precisa ser testado com valores maiores, reduzindo assim a ocorrência de falsos positivos. Este teste deve ser feito acompanhado com especialistas de negócio para adotar o uso de um valor que otimize o resultado final.
 
