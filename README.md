@@ -37,7 +37,7 @@ Por se tratar de dados sensíveis, este documento trata das técnicas utilizadas
 
 De forma resumida os dados originais são agrupados em 9 categorias, representando as variáveis econômicas (ex.: custos e investimentos) e volumétricas (ex.: produção de óleo e gás). Essas categorias possuem valores para cada período da série temporal. A figura abaixo traz um exemplo hipotético do esquema de representação utilizado considerado um período temporal estendido a 30 anos (2022 a 2051).
  
-!["Dados originais"](fig-exemplo-dados-originais-completo.png)
+!["Dados originais"](https://github.com/lcvicente/bimaster_poc/blob/main/fig-exemplo-dados-originais-completo.png)
 
 A existência de um mecanismo que melhore a confiabilidade sobre os dados processados pode ser útil para aumentar a qualidade do processo como um todo. Uma série de etapas e detalhes presentes no processo resultam em modificações e ajustes nestas projeções, aumentando a chance de erros.
 
@@ -55,11 +55,11 @@ Em geral, o processo de análise em ciência de dados possui uma etapa de pré-p
 
 Antecedendo as transformações realizadas, é importante destacar o planejamento da representação dos dados para a análise proposta. O exemplo hipotético e simplificado abaixo traz uma representação dos dados no formato original desta análise, filtrados pelas variáveis selecionadas para análise. Neste exemplo existem dados de três plataformas (PLAT1, PLAT2 e PLAT3). Os valores representados por `var_a` e `var_b` estão anualizados (coluna `ano`).
 
-!["Dados originais"](fig-exemplo-dado-original.png)
+!["Dados originais"](https://github.com/lcvicente/bimaster_poc/blob/main/fig-exemplo-dado-original.png)
 
 A ideia é comparar o comportamento de valores da cada plataforma para identificar comportamentos anormais. Pode-se afirmar que o exemplo contém três conjuntos de valores (cada conjunto referenciando uma plataforma). Para a análise, os dados foram transformados para o formato da figura abaixo, com o elemento de comparação indexado (coluna `plataforma`) e tendo seus dados representados em colunas, favorecendo assim a comparação entre os elementos. Nesta representação, a variável `ano` passa por uma transformação, explicada em detalhes a seguir, passando a iniciar em `0`, sendo incrementado de forma sequencial.
 
-!["Dados transformados"](fig-exemplo-dado-pivot.png)
+!["Dados transformados"](https://github.com/lcvicente/bimaster_poc/blob/main/fig-exemplo-dado-pivot.png)
 
 ## Seleção de atributos
 
@@ -118,7 +118,7 @@ df_flat = df_norm.pivot_table(
 
 A partir da representação obtida com as transformações, é possível verificar a distribuição de cada atributo conforme exemplo abaixo. Os histogramas demostram que a maioria das variáveis se aproximam de uma distribuição normal. Embora o foco do trabalho ser em métodos de clusterização e redes neurais, os histogramas deixam evidentes a existência de alguns _outliers_, que podem ser explorados com outras técnicas.
 
-![](fig-histograma-flat.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-histograma-flat.png)
 
 ## Visualizando dados em dimensão reduzida
 
@@ -135,7 +135,7 @@ df2dim.index = df_flat.index
 df2dim.plot(x='D1', y='D2', style='o')
 ```
 
-![](fig-tsne.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-tsne.png)
 
 Este passo foi feito apenas para permitir uma visualização dos dados, sem realizar alterações nos dados a serem processados pelos algoritmos de tratamento de anomalia.
 
@@ -157,7 +157,7 @@ visualizer.fit(df_flat)
 visualizer.show();
 ```
 
-!["KElbow"](fig-kmeans-elbow.png)
+!["KElbow"](https://github.com/lcvicente/bimaster_poc/blob/main/fig-kmeans-elbow.png)
 
 Em seguida, os dados são processados pelo algoritmo K-Means utilizando a quantidade de clusters definida pelo Elbow.
 ```
@@ -168,11 +168,11 @@ df_flat['cluster'] = km.labels_
 sns.countplot(x=km.labels_)
 ```
 
-!["Distribuição dos clusters"](fig-countplot.png)
+!["Distribuição dos clusters"](https://github.com/lcvicente/bimaster_poc/blob/main/fig-countplot.png)
  
 Além da associação de cada elemento a um cluster, é calculada distância euclidiana para cada centroide. Desta forma, é computada a distância do elemento tanto para seu cluster quanto para os demais. Na figura abaixo, cada linha representa uma plataforma e as colunas se referem ao cluster associado e às distâncias para cada centroide. Conforme lógica do _K-Means_, observa-se a menor distância de cada elemento (colunas _dist_) corresponde ao seu cluster associado (coluna _cluster_)
 
-![](fig-dist-clusters.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-dist-clusters.png)
 
 ### Identificação de _outlier local_
 
@@ -194,7 +194,7 @@ Podendo `x` ser definido como um fator de sensibilidade permitindo identificar m
 
 Este trabalho propôs uma metodologia complementar, considerando também a distância para outros centroides. Na figura abaixo, considerando que o raio mais próximo aos centroides é a zona de confiança (`mediana + fator_sensibilidade * desvio_padrão`) e o raio maior é a fronteira da área do cluster, os dois elementos destacados seriam rotulados como anômalos. No entanto, o elemento 2 possui mais similaridade com os outros centroides em comparação ao elemento 1, que está mais distante dos demais centroides.
 
-![](fig-clusters-centroides.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-clusters-centroides.png)
  
 Neste caso, a distância do elemento 2 para o seu centroide pode ser compensada por sua leve proximidade com outros centroides, tornando-o um elemento “não anômalo”. Já a anomalia do elemento 1 é "aumentada" devido sua distância para todos os centroides.
 
@@ -202,7 +202,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
 
 1.	Calcular a distância euclidiana de cada elemento para cada centroide
 
-    ![](fig-dist-clusters.png)
+    ![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-dist-clusters.png)
 
 2.	Calcular estatística dos elementos em relação a cada centroide
     ```
@@ -214,12 +214,12 @@ O processo se resume em calcular um valor denominado “distância relativa tota
     ```
     Ao final, deste processo, obtém-se resultados como os exemplificados abaixo.
 
-    ![](fig-describe-cluster.png)
+    ![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-describe-cluster.png)
 
         
 3.	Identificar distância de referência para cada centroide somando as estatísticas calculadas no passo anterior (`mediana + desvio padrão`)
 
-    ![](fig-dist-ref-clusters.png)
+    ![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-dist-ref-clusters.png)
 
 4.	Calcular a distância relativa de cada elemento para cada centroide
     ```
@@ -237,7 +237,7 @@ O processo se resume em calcular um valor denominado “distância relativa tota
 
     O histograma abaixo mostra a distribuição dos dados para cada distância relativa calculada.
 
-    ![](fig-histograma.png)
+    ![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-histograma.png)
 
 
 5.	Calcular a distância relativa total para cada elemento
@@ -257,11 +257,11 @@ O processo se resume em calcular um valor denominado “distância relativa tota
 
 A distribuição de valores de `distancia_relativa_global` é usada para identificar anomalias. Elementos cuja `distancia_relativa_total` sejam maiores que `distancia_relativa_global` são considerados anômalos. O histograma mostra a distruição dos valores calculados.
 
-![](fig-histograma-dist-ref.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-histograma-dist-ref.png)
 
 A figura abaixo exemplifica os valores de cada elemento calculados neste processo.
 
-![](fig-dist-final.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-dist-final.png)
 
 ## Método baseado em rede neural
 
@@ -269,15 +269,15 @@ A partir da proposta de redes neurais _auto-encoders_, foi implementada uma arqu
 
 A arquitetura da rede foi configurada conforme segue.
 
-![](fig-arquitetura-rede.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-arquitetura-rede.png)
 
 A curva de erro do treinamento está ilustrada na figura abaixo.
 
-![](fig-grafico-rn.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-grafico-rn.png)
 
 Analisando os erros, foi obtido o gráfico _box-plot_ abaixo.
 
-![](fig-box-plot-erro-rn.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-box-plot-erro-rn.png)
 
 Seguindo a mesma linha estatística usada nos métodos de clusterização, foi verificado a mediana e desvio padrão da distribuição dos valores de erros. Foi definido que um valor de erro acima do limite (`mediana + desvio_padrão`) identifica o elemento como anômalo.
 
@@ -291,11 +291,11 @@ Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta
 
 Os métodos de identificação de outliers _local_ e _global_ produziram os mesmos resultados para 266 elementos dos 291 analisados, correspondendo a 91% dos casos. A metodologia ajustada de uso do algoritmo `K-Means` para identificação de anomalias teve motivação em considerar as distâncias de um elemento comparado a todo universo amostral e não somente ao seu cluster. Embora tenha produzido bons resultados, esta metodologia precisa ser testada de forma mais exaustiva para ter sua eficiência avaliada. Os resultados produzidos por ambas metodologias estão detalhados na figura abaixo em forma de matriz de confusão.
 
-![](fig-conf-mat.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-conf-mat.png)
 
 Comparando a metodologia usando redes neurais com as metodologias usando clusterização, foram obtidos resultados próximos aos resultados da metodologia com cluster. Esses resultados estão resumidos na figura abaixo.
 
-![](fig-conf-mat-rn-cluster.png)
+![](https://github.com/lcvicente/bimaster_poc/blob/main/fig-conf-mat-rn-cluster.png)
 
 Esses resultados demonstram que os dados recebem o mesmo diagnóstico para a maioria dos casos com base nos algoritmos testados. O `fator de sensibilidade` (multiplicador do `desvio padrão`) foi mantido com valor `1`, ampliando a quantidade de elementos identificados como anômalos. Este indicador precisa ser testado com valores maiores, reduzindo assim a ocorrência de falsos positivos. Este teste deve ser feito acompanhado com especialistas de negócio para adotar o uso de um valor que otimize o resultado final.
 
