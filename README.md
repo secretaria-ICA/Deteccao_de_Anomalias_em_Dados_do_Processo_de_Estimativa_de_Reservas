@@ -1,4 +1,4 @@
-# Detectção de anomalias em dados do processo de estimativa de reservas
+# Detecção de anomalias em dados do processo de estimativa de reservas
 
 #### Aluno: [Leonardo Cardoso Vicente] (https://github.com/lcvicente).
 #### Orientador: [Leonardo Forero Mendonza] (https://github.com/leofome8).
