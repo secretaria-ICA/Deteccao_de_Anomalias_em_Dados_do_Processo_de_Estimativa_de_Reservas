@@ -285,7 +285,7 @@ Seguindo a mesma linha estatística usada nos métodos de clusterização, foi v
 
 Os resultados demonstraram uma boa aplicabilidade da metodologia ao processo. Além da identificação de comportamentos anômalos, foi possível também identificar os comportamentos predominantes nos dados plotando os valores dos centróides.
 
-O maior desafio foi na etapa de preparação dos dados para o objetivo da análise. Os dados passaram por várias etapas de transformação até chegar à representação adotada para processamento dos algoritmos. Ainda nesta etapa foi necessário assumir algumas premissas de negócio sobre os dados, como o alinhamento temporal e a definição da `DIMENSAO_TEMPORAL_PADRAO`. Com base nos resultados produzidos, foi verificado que as transformações feitas nesta etapa conseguiram realizar uma reprsentação adequada.
+Houve grande esforço na etapa de preparação dos dados para o objetivo da análise. Os dados passaram por várias etapas de transformação até chegar à representação adotada para processamento dos algoritmos. Ainda nesta etapa foi necessário assumir algumas premissas de negócio sobre os dados, como o alinhamento temporal e a definição da `DIMENSAO_TEMPORAL_PADRAO`. Com base nos resultados produzidos, foi verificado que as transformações feitas nesta etapa conseguiram realizar uma reprsentação adequada.
 
 Era esperado que alguns dados legítimos fossem rotulados como anômalos, e esta expectativa se confirmou. No entanto, esta situação não invalida as metodologias, uma vez que na maioria dos casos, eram particularidades pontuais em alguns dados.
 
