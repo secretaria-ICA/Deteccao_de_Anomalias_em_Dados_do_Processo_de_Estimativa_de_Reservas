@@ -1,4 +1,4 @@
-# Detecção de anomalias em dados do processo de estimativa de reservas
+# Detecção de Anomalias em Dados do Processo de Estimativa de Reservas
 
 #### Aluno: [Leonardo Cardoso Vicente] (https://github.com/lcvicente).
 #### Orientador: [Leonardo Forero Mendonza] (https://github.com/leofome8).
@@ -305,3 +305,11 @@ Algumas possibilidades de derivação deste trabalho podem focar em:
 - Melhorar a definição de métrica de distância para identificação de anomalias
 - Implementar lógica considerando o resultado das 3 metodologias implementadas, utilizando um sistema de votação (ex.: o resultado de cada elemento será o que tiver dois ou mais votos)
 - Implementação da técnica de somas cumulativas (_cumsum_).
+
+------
+
+Matrícula: 192.671.140
+
+Pontifícia Universidade Católica do Rio de Janeiro
+
+Curso de Pós Graduação *Business Intelligence Master*
